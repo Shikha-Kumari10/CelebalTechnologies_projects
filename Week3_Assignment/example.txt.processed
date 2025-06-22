@@ -1,0 +1,6 @@
+##---------------------------------------------------------------------------------------------##
+|  WEEK 3                                                                                       |
+|  ASSIGNMENT: REFACTOR AN EXISTING PIECE OF CODE THAT USES CALLBACKS FOR ASYNC                 |
+|         OPERATIONS TO USE PROMISES AND ASYNC/AWAIT FOR BETTER READABILITY AND ERROR HANDLING. | 
+|                                                                                               |
+##---------------------------------------------------------------------------------------------##

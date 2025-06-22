@@ -1,0 +1,15 @@
+Why Use Asynchronous Programming in NodeJS?
+
+-> Non-Blocking I/O: NodeJS is commonly used for tasks like file operations, API calls, and database queries. With async 
+                    programming, these tasks run in the background without stopping the rest of the code.
+
+-> Improved Performance & Scalability: This improves performance and scalability by allowing multiple requests to be handled at 
+                    the same time without delays.
+
+-> Event-Driven Execution: NodeJS follows an event-driven approach where the event loop listens for tasks and runs them only when 
+                    needed.
+
+-> Faster API Calls: This makes API calls faster since multiple data sources can be queried at the same time, reducing wait time.
+
+-> Optimized CPU & Memory Usage: Unlike multi-threaded models, NodeJS uses a single-threaded event loop, which optimizes CPU and
+                     memory usage by avoiding unnecessary resource consumption.
