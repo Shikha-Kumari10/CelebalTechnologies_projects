@@ -1,8 +1,8 @@
-
 const express = require('express');
 const mongoose = require('mongoose');
 const Product = require('./models/product.model');
 const path = require('path');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve HTML
 
 // MongoDB connection
-mongoose.connect("mongodb+srv://starrygaze39:XxGSLLGfEvcO6nIU@cruddb.ob7bx06.mongodb.net/NODE_MONGO_CRUD?retryWrites=true&w=majority&appName=CrudDB", {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
@@ -28,8 +28,12 @@ mongoose.connect("mongodb+srv://starrygaze39:XxGSLLGfEvcO6nIU@cruddb.ob7bx06.mon
 
 // Routes
 app.get('/api/products', async (req, res) => {
-  const products = await Product.find();
-  res.json(products);
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/products', async (req, res) => {
@@ -50,7 +54,6 @@ app.put('/api/products/:id', async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
-
 
 app.delete('/api/products/:id', async (req, res) => {
   try {
