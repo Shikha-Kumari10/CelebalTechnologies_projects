@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Product CRUD</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    input, button { margin: 5px; padding: 6px; }
+    .product { margin-top: 10px; padding: 10px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h2>Add / Update Product</h2>
+  <input type="text" id="name" placeholder="Name">
+  <input type="number" id="quantity" placeholder="Quantity">
+  <input type="number" id="price" placeholder="Price">
+  <input type="text" id="image" placeholder="Image URL">
+  <button id="submit-btn" onclick="addOrUpdateProduct()">Add</button>
+
+  <h2>Products</h2>
+  <div id="products"></div>
+
+  <script>
+    const apiUrl = '/api/products';
+    let currentEditId = null;
+
+    async function fetchProducts() {
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+      const container = document.getElementById('products');
+      container.innerHTML = '';
+      data.forEach(p => {
+        container.innerHTML += `
+          <div class="product">
+            <b>${p.name}</b> | Qty: ${p.quantity} | $${p.price}
+            <br>
+            <img src="${p.image}" width="100" onerror="this.style.display='none'"><br>
+            <button onclick="startEdit('${p._id}', '${p.name}', ${p.quantity}, ${p.price}, '${p.image}')">Edit</button>
+            <button onclick="deleteProduct('${p._id}')">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    async function addOrUpdateProduct() {
+      const name = document.getElementById('name').value;
+      const quantity = document.getElementById('quantity').value;
+      const price = document.getElementById('price').value;
+      const image = document.getElementById('image').value;
+
+      const payload = { name, quantity, price, image };
+
+      if (currentEditId) {
+        // UPDATE
+        await fetch(`${apiUrl}/${currentEditId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        currentEditId = null;
+        document.getElementById('submit-btn').innerText = "Add";
+      } else {
+        // CREATE
+        await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      // Reset form
+      document.getElementById('name').value = '';
+      document.getElementById('quantity').value = '';
+      document.getElementById('price').value = '';
+      document.getElementById('image').value = '';
+
+      fetchProducts();
+    }
+
+    function startEdit(id, name, quantity, price, image) {
+      document.getElementById('name').value = name;
+      document.getElementById('quantity').value = quantity;
+      document.getElementById('price').value = price;
+      document.getElementById('image').value = image;
+      currentEditId = id;
+      document.getElementById('submit-btn').innerText = "Update";
+    }
+
+    async function deleteProduct(id) {
+      await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+      fetchProducts();
+    }
+
+    fetchProducts();
+  </script>
+
+</body>
+</html>

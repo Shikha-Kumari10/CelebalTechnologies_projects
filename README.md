@@ -10,4 +10,9 @@ Assignment: Utilize Node.js core modules such as File System, Path, and HTTP to 
 ## Week 3
 Assignment: Refactor an existing piece of code that uses callbacks for async operations to use Promises and Async/Await for better readability and error handling.
 
+## Week 4
+Assignment: Set up a simple web server using Express.js that can handle basic routing and middleware. Implement routes to respond to at least two different endpoints.
+
+## Week 5
+Assignment: Develop a simple application to Create, Read, Update, and Delete (CRUD) entries in a MongoDB database using Mongoose.
 
