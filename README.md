@@ -16,3 +16,6 @@ Assignment: Set up a simple web server using Express.js that can handle basic ro
 ## Week 5
 Assignment: Develop a simple application to Create, Read, Update, and Delete (CRUD) entries in a MongoDB database using Mongoose.
 
+## Week 6
+Assignment: Create a RESTful API using Node.js and Express that supports basic CRUD operations on a resource (like users, products, etc.) 
+
