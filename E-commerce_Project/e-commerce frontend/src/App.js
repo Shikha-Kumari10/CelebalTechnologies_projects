@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import './style.css';
 
 const API = "https://celebaltechnologies-projects-2.onrender.com";
 
