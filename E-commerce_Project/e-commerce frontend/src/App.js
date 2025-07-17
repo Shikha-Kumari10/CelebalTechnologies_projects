@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API = "https://YOUR_BACKEND_URL/api";
+const API = "https://celebaltechnologies-projects-2.onrender.com";
 
 function App() {
   const [products, setProducts] = useState([]);
