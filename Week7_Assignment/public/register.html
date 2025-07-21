@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Register</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    input, button { display: block; margin: 0.5rem 0; padding: 0.5rem; width: 250px; }
+    .message { margin-top: 1rem; color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h2>User Registration</h2>
+  <input type="text" id="name" placeholder="Full Name">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <input type="number" id="age" placeholder="Age">
+  <button onclick="registerUser()">Register</button>
+
+  <div id="response" class="message"></div>
+
+  <p>Already registered? <a href="/login.html">Go to Login</a></p>
+
+  <script>
+    async function registerUser() {
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const age = document.getElementById('age').value;
+      const responseBox = document.getElementById('response');
+
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, age })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        responseBox.textContent = data.message;
+        responseBox.className = 'message';
+      } else {
+        responseBox.textContent = data.message || 'Registration failed';
+        responseBox.className = 'error';
+      }
+    }
+  </script>
+</body>
+</html>

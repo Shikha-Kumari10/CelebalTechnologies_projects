@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Page</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    input, button { margin: 8px 0; padding: 8px; width: 100%; }
+    .container { max-width: 400px; margin: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+
+    <h3>Profile Info (Protected)</h3>
+    <button onclick="getProfile()">Get My Profile</button>
+    <pre id="profile"></pre>
+  </div>
+
+  <script>
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        alert('Login successful!');
+      } else {
+        alert(data.error || 'Login failed');
+      }
+    }
+
+    async function getProfile() {
+      const token = localStorage.getItem('token');
+      if (!token) return alert('Please login first.');
+
+      const res = await fetch('/api/users/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('profile').textContent = JSON.stringify(data, null, 2);
+      } else {
+        alert(data.error || 'Unauthorized');
+      }
+    }
+  </script>
+</body>
+</html>
