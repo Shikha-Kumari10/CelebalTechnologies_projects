@@ -1,8 +1,10 @@
-// backend/src/controllers/orderController.js
+
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
+const { processPayment } = require('../services/paymentService');
+const { sendOrderConfirmation } = require('../services/emailService');
 
-// @desc    Create new order
+// @desc    Create new order (with Stripe payment & email)
 // @route   POST /api/v1/orders
 // @access  Private
 exports.createOrder = async (req, res, next) => {
@@ -11,6 +13,7 @@ exports.createOrder = async (req, res, next) => {
       orderItems,
       shippingInfo,
       paymentMethod,
+      paymentMethodId,      // Stripe PaymentMethod ID from client
       itemsPrice,
       taxPrice,
       shippingPrice,
@@ -21,11 +24,30 @@ exports.createOrder = async (req, res, next) => {
       return res.status(400).json({ message: 'No order items' });
     }
 
+    // 1) Process payment if using Stripe
+    let paymentResult = {};
+    if (paymentMethod === 'stripe') {
+      const amountInCents = Math.round(totalPrice * 100);
+      const paymentIntent = await processPayment(
+        amountInCents,
+        'usd',
+        paymentMethodId
+      );
+      paymentResult = {
+        id: paymentIntent.id,
+        status: paymentIntent.status,
+        update_time: paymentIntent.created,    // timestamp
+        email_address: req.user.email,
+      };
+    }
+
+    // 2) Create the order record
     const order = await Order.create({
       user: req.user.id,
       orderItems,
       shippingInfo,
       paymentMethod,
+      paymentResult,
       itemsPrice,
       taxPrice,
       shippingPrice,
@@ -33,75 +55,25 @@ exports.createOrder = async (req, res, next) => {
       paidAt: Date.now(),
     });
 
-    // Clear cart after successful order
+    // 3) Clear user's cart
     await Cart.findOneAndDelete({ user: req.user.id });
 
+    // 4) Send confirmation email
+    const emailHtml = `
+      <h1>Order Confirmation</h1>
+      <p>Hi ${req.user.name},</p>
+      <p>Thank you for your order <strong>#${order._id}</strong>.</p>
+      <p>Total: <strong>$${totalPrice.toFixed(2)}</strong></p>
+      <p>We’ll let you know when it ships.</p>
+      <p>— E-Shop Team</p>
+    `;
+    await sendOrderConfirmation(
+      req.user.email,
+      `Your Order ${order._id} is Confirmed`,
+      emailHtml
+    );
+
     res.status(201).json(order);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Get order by ID
-// @route   GET /api/v1/orders/:id
-// @access  Private
-exports.getOrderById = async (req, res, next) => {
-  try {
-    const order = await Order.findById(req.params.id)
-      .populate('user', 'name email');
-    if (!order) return res.status(404).json({ message: 'Order not found' });
-
-    // Only owner or admin can view
-    if (
-      order.user._id.toString() !== req.user.id &&
-      req.user.role !== 'admin'
-    ) {
-      return res.status(401).json({ message: 'Not authorized' });
-    }
-
-    res.json(order);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Get logged in user's orders
-// @route   GET /api/v1/orders
-// @access  Private
-exports.getMyOrders = async (req, res, next) => {
-  try {
-    const orders = await Order.find({ user: req.user.id });
-    res.json(orders);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Get all orders (Admin)
-// @route   GET /api/v1/orders/all
-// @access  Private/Admin
-exports.getOrders = async (req, res, next) => {
-  try {
-    const orders = await Order.find().populate('user', 'id name');
-    res.json(orders);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// @desc    Mark order as delivered
-// @route   PUT /api/v1/orders/:id/deliver
-// @access  Private/Admin
-exports.updateOrderToDelivered = async (req, res, next) => {
-  try {
-    const order = await Order.findById(req.params.id);
-    if (!order) return res.status(404).json({ message: 'Order not found' });
-
-    order.orderStatus = 'Delivered';
-    order.deliveredAt = Date.now();
-    await order.save();
-
-    res.json(order);
   } catch (error) {
     next(error);
   }
